@@ -20,6 +20,10 @@ import {
   updateBlog,
   deleteBlog,
 } from '../controllers/blogController';
+import {
+  getAdminInquiries,
+  deleteAdminInquiry,
+} from '../controllers/inquiryController';
 
 const router = Router();
 
@@ -38,5 +42,9 @@ router.get('/blogs', getAllBlogsAdmin);
 router.post('/blogs', apiWriteLimiter, validateBody(blogSchema), createBlog);
 router.put('/blogs/:id', apiWriteLimiter, validateBody(blogUpdateSchema), updateBlog);
 router.delete('/blogs/:id', apiWriteLimiter, deleteBlog);
+
+// Admin Inquiry Routes
+router.get('/inquiries', getAdminInquiries);
+router.delete('/inquiries/:id', apiWriteLimiter, deleteAdminInquiry);
 
 export default router;
