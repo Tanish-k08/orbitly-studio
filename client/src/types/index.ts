@@ -32,6 +32,17 @@ export interface Blog {
   updatedAt: string;
 }
 
+export interface Inquiry {
+  _id: string;
+  name: string;
+  email: string;
+  service: string;
+  budget: string;
+  details: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface ApiResponse<T> {
   success: boolean;
   message?: string;
