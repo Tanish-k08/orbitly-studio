@@ -3,6 +3,9 @@
 @tailwind utilities;
 
 @layer base {
+  html {
+    font-size: 18px;
+  }
   body {
     @apply bg-[#fbfbfd] text-slate-900 font-sans antialiased;
     font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
