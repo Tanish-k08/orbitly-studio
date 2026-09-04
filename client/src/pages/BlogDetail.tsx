@@ -65,7 +65,7 @@ export const BlogDetail: React.FC = () => {
       <div>
         <Link
           to="/#blog"
-          className="inline-flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-slate-950 transition-colors"
+          className="inline-flex items-center gap-2 text-base font-medium text-slate-700 hover:text-slate-950 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Back to Articles</span>
@@ -74,7 +74,7 @@ export const BlogDetail: React.FC = () => {
 
       {/* Header Info */}
       <header className="space-y-6">
-        <div className="flex flex-wrap items-center gap-4 text-xs font-medium text-slate-600">
+        <div className="flex flex-wrap items-center gap-4 text-sm font-medium text-slate-600">
           {blog.featured && (
             <span className="px-3 py-1 rounded-full bg-indigo-600 text-white font-semibold flex items-center gap-1 shadow-sm">
               <Sparkles className="w-3.5 h-3.5" />
@@ -130,12 +130,12 @@ export const BlogDetail: React.FC = () => {
       <div className="pt-12 border-t border-slate-200 flex items-center justify-between">
         <Link
           to="/#blog"
-          className="inline-flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-slate-950 transition-colors"
+          className="inline-flex items-center gap-2 text-base font-medium text-slate-700 hover:text-slate-950 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Back to Blog Articles</span>
         </Link>
-        <span className="text-xs text-slate-500">Published by Orbitly Studio Editorial</span>
+        <span className="text-sm text-slate-500">Published by Orbitly Studio Editorial</span>
       </div>
     </article>
   );
