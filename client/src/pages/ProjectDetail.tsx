@@ -64,7 +64,7 @@ export const ProjectDetail: React.FC = () => {
       <div>
         <Link
           to="/#work"
-          className="inline-flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-slate-950 transition-colors"
+          className="inline-flex items-center gap-2 text-base font-medium text-slate-700 hover:text-slate-950 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Back to Selected Work</span>
@@ -77,7 +77,7 @@ export const ProjectDetail: React.FC = () => {
           {project.tags.map((tag, idx) => (
             <span
               key={idx}
-              className="px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-800 border border-slate-200/80"
+              className="px-3 py-1 rounded-full text-sm font-semibold bg-slate-100 text-slate-800 border border-slate-200/80"
             >
               {tag}
             </span>
@@ -114,7 +114,7 @@ export const ProjectDetail: React.FC = () => {
             <Target className="w-5 h-5" />
           </div>
           <h2 className="text-lg md:text-xl font-bold text-slate-900">The Challenge</h2>
-          <p className="text-slate-700 text-sm leading-relaxed font-normal">
+          <p className="text-slate-700 text-base leading-relaxed font-normal">
             {project.problem}
           </p>
         </div>
@@ -125,7 +125,7 @@ export const ProjectDetail: React.FC = () => {
             <Lightbulb className="w-5 h-5" />
           </div>
           <h2 className="text-lg md:text-xl font-bold text-slate-900">What Orbitly Did</h2>
-          <p className="text-slate-700 text-sm leading-relaxed font-normal">
+          <p className="text-slate-700 text-base leading-relaxed font-normal">
             {project.solution}
           </p>
         </div>
@@ -136,7 +136,7 @@ export const ProjectDetail: React.FC = () => {
             <Trophy className="w-5 h-5" />
           </div>
           <h2 className="text-lg md:text-xl font-bold text-slate-900">Impact & Outcome</h2>
-          <p className="text-slate-700 text-sm leading-relaxed font-normal">
+          <p className="text-slate-700 text-base leading-relaxed font-normal">
             {project.outcome}
           </p>
         </div>
@@ -146,11 +146,11 @@ export const ProjectDetail: React.FC = () => {
       <div className="p-8 sm:p-12 rounded-3xl bg-white/80 backdrop-blur-md border border-slate-200/70 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-6">
         <div>
           <h3 className="text-2xl font-bold text-slate-950 mb-1">Inspired by this result?</h3>
-          <p className="text-slate-700 text-sm">Let’s discuss how we can build something similar for your product.</p>
+          <p className="text-slate-700 text-base">Let’s discuss how we can build something similar for your product.</p>
         </div>
         <Link
           to="/#contact"
-          className="px-6 py-3 rounded-full bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm transition-all shadow-md whitespace-nowrap"
+          className="px-6 py-3 rounded-full bg-slate-900 hover:bg-slate-800 text-white font-bold text-base transition-all shadow-md whitespace-nowrap"
         >
           Start a Project Conversation
         </Link>
