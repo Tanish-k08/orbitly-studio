@@ -58,7 +58,7 @@ export const Navbar: React.FC = () => {
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-700">
+          <nav className="hidden md:flex items-center gap-8 text-base font-medium text-slate-700">
             <button
               onClick={() => handleNavClick('work')}
               className="hover:text-indigo-600 transition-colors"
@@ -97,7 +97,7 @@ export const Navbar: React.FC = () => {
               <div className="flex items-center gap-3">
                 <Link
                   to="/admin/dashboard"
-                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition-all"
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-sm font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition-all"
                 >
                   <ShieldCheck className="w-3.5 h-3.5 text-indigo-600" />
                   Admin Dashboard
@@ -114,7 +114,7 @@ export const Navbar: React.FC = () => {
 
             <button
               onClick={() => handleNavClick('contact')}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-900 hover:bg-slate-800 text-white font-semibold text-base transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5"
             >
               <span>Start a Project</span>
               <ArrowUpRight className="w-4 h-4 text-slate-300" />
@@ -172,14 +172,14 @@ export const Navbar: React.FC = () => {
                 <Link
                   to="/admin/dashboard"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center gap-2 text-sm font-semibold text-indigo-600"
+                  className="flex items-center gap-2 text-base font-semibold text-indigo-600"
                 >
                   <ShieldCheck className="w-4 h-4" />
                   Admin Dashboard
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="text-sm text-red-600 hover:underline"
+                  className="text-base text-red-600 hover:underline"
                 >
                   Logout
                 </button>
@@ -189,7 +189,7 @@ export const Navbar: React.FC = () => {
                 <Link
                   to="/admin/login"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="text-sm text-slate-500 hover:text-slate-800"
+                  className="text-base text-slate-500 hover:text-slate-800"
                 >
                   Admin Portal Login
                 </Link>
@@ -198,7 +198,7 @@ export const Navbar: React.FC = () => {
 
             <button
               onClick={() => handleNavClick('contact')}
-              className="w-full mt-4 flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-slate-900 text-white font-semibold text-sm shadow-md"
+              className="w-full mt-4 flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-slate-900 text-white font-semibold text-base shadow-md"
             >
               <span>Start a Project</span>
               <ArrowUpRight className="w-4 h-4 text-slate-300" />
