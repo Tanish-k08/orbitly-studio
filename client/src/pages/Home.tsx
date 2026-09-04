@@ -17,7 +17,7 @@ import {
   Check,
 } from 'lucide-react';
 import { Project, Blog } from '../types';
-import { getPublicProjectsApi, getPublicBlogsApi } from '../services/api';
+import { getPublicProjectsApi, getPublicBlogsApi, createInquiryApi } from '../services/api';
 
 export const Home: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -75,7 +75,7 @@ export const Home: React.FC = () => {
     }
   };
 
-  const handleContactSubmit = (e: React.FormEvent) => {
+  const handleContactSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setContactFormError(null);
 
@@ -84,9 +84,9 @@ export const Home: React.FC = () => {
       return;
     }
 
-    setSubmittingContact(true);
-    setTimeout(() => {
-      setSubmittingContact(false);
+    try {
+      setSubmittingContact(true);
+      await createInquiryApi(contactForm);
       setContactSuccess(true);
       setContactForm({
         name: '',
@@ -95,7 +95,15 @@ export const Home: React.FC = () => {
         budget: '$15k - $30k',
         details: '',
       });
-    }, 1200);
+    } catch (err: any) {
+      setContactFormError(
+        err.response?.data?.message ||
+          err.response?.data?.errors?.[0]?.message ||
+          'Failed to send inquiry. Please try again.'
+      );
+    } finally {
+      setSubmittingContact(false);
+    }
   };
 
   return (
@@ -599,7 +607,7 @@ export const Home: React.FC = () => {
                 We are currently accepting new client projects. Tell us about your product goals, and we'll reply within 24 hours.
               </p>
 
-              <div className="space-y-3 pt-2 text-sm text-slate-600">
+              <div className="space-y-3 pt-2 text-base text-slate-700">
                 <div className="flex items-center gap-3">
                   <div className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center">
                     <Check className="w-3.5 h-3.5" />
@@ -623,12 +631,12 @@ export const Home: React.FC = () => {
                     <Check className="w-8 h-8" />
                   </div>
                   <h3 className="text-2xl font-bold text-slate-900">Message Received!</h3>
-                  <p className="text-slate-600 text-sm max-w-md mx-auto">
+                  <p className="text-slate-600 text-base max-w-md mx-auto">
                     Thanks for reaching out to Orbitly Studio. Our design partners will review your project details and respond within 24 hours.
                   </p>
                   <button
                     onClick={() => setContactSuccess(false)}
-                    className="mt-4 px-6 py-2.5 rounded-full bg-slate-900 text-white font-semibold text-xs hover:bg-slate-800 transition-colors"
+                    className="mt-4 px-6 py-2.5 rounded-full bg-slate-900 text-white font-semibold text-sm hover:bg-slate-800 transition-colors"
                   >
                     Send Another Message
                   </button>
@@ -636,14 +644,14 @@ export const Home: React.FC = () => {
               ) : (
                 <form onSubmit={handleContactSubmit} className="glass-card p-6 sm:p-8 rounded-2xl space-y-4">
                   {contactFormError && (
-                    <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-xs font-semibold">
+                    <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm font-semibold">
                       {contactFormError}
                     </div>
                   )}
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                      <label className="block text-base font-semibold text-slate-800 mb-1.5">
                         Your Name *
                       </label>
                       <input
@@ -652,12 +660,12 @@ export const Home: React.FC = () => {
                         value={contactForm.name}
                         onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
                         placeholder="Alex Morgan"
-                        className="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 text-sm focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
+                        className="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 text-base focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                      <label className="block text-base font-semibold text-slate-800 mb-1.5">
                         Email Address *
                       </label>
                       <input
@@ -666,20 +674,20 @@ export const Home: React.FC = () => {
                         value={contactForm.email}
                         onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
                         placeholder="alex@company.com"
-                        className="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 text-sm focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
+                        className="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 text-base focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600"
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                      <label className="block text-base font-semibold text-slate-800 mb-1.5">
                         Primary Service Needed
                       </label>
                       <select
                         value={contactForm.service}
                         onChange={(e) => setContactForm({ ...contactForm, service: e.target.value })}
-                        className="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-slate-900 text-sm focus:outline-none focus:border-indigo-600"
+                        className="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-slate-900 text-base focus:outline-none focus:border-indigo-600"
                       >
                         <option>UI/UX Design</option>
                         <option>Brand Identity</option>
@@ -690,23 +698,23 @@ export const Home: React.FC = () => {
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                      <label className="block text-base font-semibold text-slate-800 mb-1.5">
                         Estimated Budget
                       </label>
                       <select
                         value={contactForm.budget}
                         onChange={(e) => setContactForm({ ...contactForm, budget: e.target.value })}
-                        className="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-slate-900 text-sm focus:outline-none focus:border-indigo-600"
+                        className="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-slate-900 text-base focus:outline-none focus:border-indigo-600"
                       >
-                        <option>\$15k - \$30k</option>
-                        <option>\$30k - \$60k</option>
-                        <option>\$60k+</option>
+                        <option>$15k - $30k</option>
+                        <option>$30k - $60k</option>
+                        <option>$60k+</option>
                       </select>
                     </div>
                   </div>
 
                   <div className="text-left">
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                    <label className="block text-base font-semibold text-slate-800 mb-1.5">
                       Project Details *
                     </label>
                     <textarea
@@ -715,14 +723,14 @@ export const Home: React.FC = () => {
                       value={contactForm.details}
                       onChange={(e) => setContactForm({ ...contactForm, details: e.target.value })}
                       placeholder="Tell us briefly about your product goals, timeline, and challenges..."
-                      className="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 text-sm focus:outline-none focus:border-indigo-600"
+                      className="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 text-base focus:outline-none focus:border-indigo-600"
                     />
                   </div>
 
                   <button
                     type="submit"
                     disabled={submittingContact}
-                    className="w-full py-3 px-6 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm transition-all shadow-md flex items-center justify-center gap-2 disabled:opacity-50"
+                    className="w-full py-3 px-6 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-base transition-all shadow-md flex items-center justify-center gap-2 disabled:opacity-50"
                   >
                     {submittingContact ? (
                       <>
