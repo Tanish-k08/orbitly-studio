@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Project, Blog, LoginResponse, ApiResponse, User } from '../types';
+import { Project, Blog, Inquiry, LoginResponse, ApiResponse, User } from '../types';
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
@@ -61,6 +61,18 @@ export const getPublicBlogBySlugApi = async (slug: string): Promise<Blog> => {
   return response.data.data;
 };
 
+// PUBLIC INQUIRY API
+export const createInquiryApi = async (inquiryData: {
+  name: string;
+  email: string;
+  service: string;
+  budget: string;
+  details: string;
+}): Promise<Inquiry> => {
+  const response = await api.post<ApiResponse<Inquiry>>('/inquiries', inquiryData);
+  return response.data.data!;
+};
+
 // ADMIN PROJECT APIS
 export const getAdminProjectsApi = async (): Promise<Project[]> => {
   const response = await api.get<ApiResponse<Project[]>>('/admin/projects');
@@ -99,6 +111,16 @@ export const updateBlogApi = async (id: string, blogData: Partial<Blog>): Promis
 
 export const deleteBlogApi = async (id: string): Promise<void> => {
   await api.delete(`/admin/blogs/${id}`);
+};
+
+// ADMIN INQUIRY APIS
+export const getAdminInquiriesApi = async (): Promise<Inquiry[]> => {
+  const response = await api.get<ApiResponse<Inquiry[]>>('/admin/inquiries');
+  return response.data.data || [];
+};
+
+export const deleteAdminInquiryApi = async (id: string): Promise<void> => {
+  await api.delete(`/admin/inquiries/${id}`);
 };
 
 export default api;
