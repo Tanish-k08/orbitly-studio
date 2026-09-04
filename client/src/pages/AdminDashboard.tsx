@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import {
   LayoutDashboard,
   FolderKanban,
   FileText,
+  Inbox,
   LogOut,
   Plus,
   Edit2,
@@ -15,7 +16,7 @@ import {
   Search,
   ExternalLink,
 } from 'lucide-react';
-import { Project, Blog } from '../types';
+import { Project, Blog, Inquiry } from '../types';
 import {
   getAdminProjectsApi,
   createProjectApi,
@@ -25,15 +26,18 @@ import {
   createBlogApi,
   updateBlogApi,
   deleteBlogApi,
+  getAdminInquiriesApi,
+  deleteAdminInquiryApi,
 } from '../services/api';
 
 export const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'overview' | 'projects' | 'blogs'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'projects' | 'blogs' | 'inquiries'>('overview');
 
   // Data states
   const [projects, setProjects] = useState<Project[]>([]);
   const [blogs, setBlogs] = useState<Blog[]>([]);
+  const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -78,12 +82,14 @@ export const AdminDashboard: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      const [projData, blogData] = await Promise.all([
+      const [projData, blogData, inqData] = await Promise.all([
         getAdminProjectsApi(),
         getAdminBlogsApi(),
+        getAdminInquiriesApi(),
       ]);
       setProjects(projData);
       setBlogs(blogData);
+      setInquiries(inqData);
     } catch (err: any) {
       if (err.response?.status === 401 || err.response?.status === 403) {
         localStorage.removeItem('token');
@@ -99,7 +105,7 @@ export const AdminDashboard: React.FC = () => {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [activeTab]);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -270,6 +276,17 @@ export const AdminDashboard: React.FC = () => {
     }
   };
 
+  // --- INQUIRY CRUD HANDLERS ---
+  const handleDeleteInquiry = async (id: string, name: string) => {
+    if (!window.confirm(`Are you sure you want to delete the inquiry from "${name}"?`)) return;
+    try {
+      await deleteAdminInquiryApi(id);
+      await loadData();
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Failed to delete inquiry');
+    }
+  };
+
   const generateSlug = (text: string) => {
     return text
       .toLowerCase()
@@ -289,81 +306,105 @@ export const AdminDashboard: React.FC = () => {
     b.slug.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const filteredInquiries = inquiries.filter((i) =>
+    i.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    i.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    i.service.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
-    <div className="min-h-screen bg-[#fbfbfd] text-slate-900 flex flex-col md:flex-row">
+    <div className="min-h-screen bg-[#fbfbfd] text-slate-900 flex flex-col md:flex-row font-sans">
       {/* Sidebar */}
       <aside className="w-full md:w-64 bg-white border-b md:border-b-0 md:border-r border-slate-200 p-6 flex flex-col justify-between shrink-0 shadow-sm">
         <div className="space-y-8">
           {/* Studio Brand */}
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center font-bold text-xs text-white">
+          <Link to="/" className="flex items-center gap-2.5 group">
+            <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center font-bold text-sm text-white">
               OS
             </div>
-            <span className="font-bold text-base tracking-tight text-slate-900">
+            <span className="font-bold text-lg tracking-tight text-slate-900">
               ORBITLY <span className="text-indigo-600 font-light">ADMIN</span>
             </span>
-          </div>
+          </Link>
 
           {/* Navigation Links */}
-          <nav className="space-y-1 text-sm font-medium">
+          <nav className="space-y-1.5 text-base font-medium">
             <button
               onClick={() => setActiveTab('overview')}
-              className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-colors text-left font-bold ${activeTab === 'overview'
-                ? 'bg-slate-900 text-white shadow-md'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-                }`}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-left font-semibold text-base ${
+                activeTab === 'overview'
+                  ? 'bg-slate-900 text-white shadow-md'
+                  : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100'
+              }`}
             >
-              <LayoutDashboard className="w-4 h-4" />
+              <LayoutDashboard className="w-5 h-5" />
               <span>Overview</span>
             </button>
 
             <button
               onClick={() => setActiveTab('projects')}
-              className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-colors text-left font-bold ${activeTab === 'projects'
-                ? 'bg-slate-900 text-white shadow-md'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-                }`}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-left font-semibold text-base ${
+                activeTab === 'projects'
+                  ? 'bg-slate-900 text-white shadow-md'
+                  : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100'
+              }`}
             >
-              <FolderKanban className="w-4 h-4" />
+              <FolderKanban className="w-5 h-5" />
               <span>Projects</span>
-              <span className="ml-auto bg-slate-100 text-slate-700 text-xs px-2 py-0.5 rounded-full font-mono">
+              <span className="ml-auto bg-slate-100 text-slate-700 text-xs px-2.5 py-1 rounded-full font-mono font-bold">
                 {projects.length}
               </span>
             </button>
 
             <button
               onClick={() => setActiveTab('blogs')}
-              className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-colors text-left font-bold ${activeTab === 'blogs'
-                ? 'bg-slate-900 text-white shadow-md'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-                }`}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-left font-semibold text-base ${
+                activeTab === 'blogs'
+                  ? 'bg-slate-900 text-white shadow-md'
+                  : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100'
+              }`}
             >
-              <FileText className="w-4 h-4" />
+              <FileText className="w-5 h-5" />
               <span>Blogs</span>
-              <span className="ml-auto bg-slate-100 text-slate-700 text-xs px-2 py-0.5 rounded-full font-mono">
+              <span className="ml-auto bg-slate-100 text-slate-700 text-xs px-2.5 py-1 rounded-full font-mono font-bold">
                 {blogs.length}
               </span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('inquiries')}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-left font-semibold text-base ${
+                activeTab === 'inquiries'
+                  ? 'bg-slate-900 text-white shadow-md'
+                  : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100'
+              }`}
+            >
+              <Inbox className="w-5 h-5" />
+              <span>Inquiries</span>
+              {inquiries.length > 0 && (
+                <span className="ml-auto bg-indigo-600 text-white text-xs px-2.5 py-1 rounded-full font-mono font-bold shadow-sm">
+                  {inquiries.length}
+                </span>
+              )}
             </button>
           </nav>
         </div>
 
         {/* Sidebar Footer / Logout */}
         <div className="pt-6 border-t border-slate-200 space-y-3">
-          <a
-            href="/"
-            target="_blank"
-            rel="noreferrer"
-            className="flex items-center gap-2 text-xs font-bold text-indigo-600 hover:underline"
+          <Link
+            to="/"
+            className="flex items-center gap-2 text-sm font-semibold text-indigo-600 hover:underline"
           >
-            <ExternalLink className="w-3.5 h-3.5" />
+            <ExternalLink className="w-4 h-4" />
             <span>View Public Live Site</span>
-          </a>
+          </Link>
 
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 hover:bg-red-50 text-slate-700 hover:text-red-600 text-xs font-bold border border-slate-200 hover:border-red-200 transition-colors"
+            className="w-full flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-red-50 text-slate-700 hover:text-red-600 text-sm font-bold border border-slate-200 hover:border-red-200 transition-colors"
           >
-            <LogOut className="w-3.5 h-3.5" />
+            <LogOut className="w-4 h-4" />
             <span>Logout Session</span>
           </button>
         </div>
@@ -375,13 +416,13 @@ export const AdminDashboard: React.FC = () => {
         {loading && (
           <div className="flex flex-col items-center justify-center py-24 text-slate-500 gap-3">
             <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
-            <p className="text-sm font-medium">Syncing CMS records from database...</p>
+            <p className="text-base font-medium">Syncing CMS records from database...</p>
           </div>
         )}
 
         {/* Global Error */}
         {error && (
-          <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm flex items-center gap-3 mb-6 font-semibold">
+          <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-base flex items-center gap-3 mb-6 font-semibold">
             <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
             <span>{error}</span>
           </div>
@@ -392,11 +433,11 @@ export const AdminDashboard: React.FC = () => {
             {/* Top Bar / Search */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
               <div>
-                <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 capitalize">
+                <h1 className="text-2xl font-bold text-slate-900 capitalize">
                   {activeTab} Management
                 </h1>
-                <p className="text-xs text-slate-500 mt-1">
-                  Manage live portfolio case studies and editorial blog articles.
+                <p className="text-sm text-slate-500 mt-1">
+                  Manage live portfolio case studies, editorial blog articles, and client inquiries.
                 </p>
               </div>
 
@@ -405,7 +446,7 @@ export const AdminDashboard: React.FC = () => {
                 {activeTab === 'projects' && (
                   <button
                     onClick={openNewProjectModal}
-                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition-all shadow-md"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm transition-all shadow-md"
                   >
                     <Plus className="w-4 h-4" />
                     <span>Add Project</span>
@@ -415,7 +456,7 @@ export const AdminDashboard: React.FC = () => {
                 {activeTab === 'blogs' && (
                   <button
                     onClick={openNewBlogModal}
-                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition-all shadow-md"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm transition-all shadow-md"
                   >
                     <Plus className="w-4 h-4" />
                     <span>Add Blog Post</span>
@@ -428,38 +469,36 @@ export const AdminDashboard: React.FC = () => {
             {activeTab === 'overview' && (
               <div className="space-y-8">
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-5">
                   <div className="glass-card p-6 rounded-2xl space-y-2">
-                    <div className="text-xs font-bold text-slate-500 uppercase">Total Projects</div>
-                    <div className="text-3xl font-extrabold text-slate-900">{projects.length}</div>
+                    <div className="text-xs tracking-wider uppercase text-slate-500 font-bold">Total Projects</div>
+                    <div className="text-3xl font-black text-slate-900">{projects.length}</div>
                     <div className="text-xs text-indigo-600 font-semibold pt-1">
                       {projects.filter((p) => p.status === 'published').length} published, {projects.filter((p) => p.status === 'draft').length} draft
                     </div>
                   </div>
 
                   <div className="glass-card p-6 rounded-2xl space-y-2">
-                    <div className="text-xs font-bold text-slate-500 uppercase">Total Articles</div>
-                    <div className="text-3xl font-extrabold text-slate-900">{blogs.length}</div>
+                    <div className="text-xs tracking-wider uppercase text-slate-500 font-bold">Total Articles</div>
+                    <div className="text-3xl font-black text-slate-900">{blogs.length}</div>
                     <div className="text-xs text-indigo-600 font-semibold pt-1">
                       {blogs.filter((b) => b.status === 'published').length} published, {blogs.filter((b) => b.status === 'draft').length} draft
                     </div>
                   </div>
 
                   <div className="glass-card p-6 rounded-2xl space-y-2">
-                    <div className="text-xs font-bold text-slate-500 uppercase">Featured Posts</div>
-                    <div className="text-3xl font-extrabold text-indigo-600">
-                      {blogs.filter((b) => b.featured).length}
-                    </div>
-                    <div className="text-xs text-slate-500 pt-1">Highlighted on homepage</div>
+                    <div className="text-xs tracking-wider uppercase text-slate-500 font-bold">Client Inquiries</div>
+                    <div className="text-3xl font-black text-indigo-600">{inquiries.length}</div>
+                    <div className="text-xs text-slate-500 pt-1">Received from contact form</div>
                   </div>
 
                   <div className="glass-card p-6 rounded-2xl space-y-2">
-                    <div className="text-xs font-bold text-slate-500 uppercase">Public Security</div>
-                    <div className="text-xs font-bold text-emerald-700 flex items-center gap-1 mt-2">
+                    <div className="text-xs tracking-wider uppercase text-slate-500 font-bold">Public Security</div>
+                    <div className="text-sm font-bold text-emerald-700 flex items-center gap-1.5 mt-2">
                       <CheckCircle className="w-4 h-4 text-emerald-600" />
                       <span>Draft Protection Active</span>
                     </div>
-                    <div className="text-[11px] text-slate-500">Public endpoints filter status="published"</div>
+                    <div className="text-xs text-slate-500">Public APIs enforce status="published"</div>
                   </div>
                 </div>
 
@@ -468,10 +507,10 @@ export const AdminDashboard: React.FC = () => {
                   {/* Recent Projects */}
                   <div className="glass-panel p-6 rounded-2xl space-y-4">
                     <div className="flex items-center justify-between">
-                      <h3 className="font-bold text-slate-900 text-base">Recent Projects</h3>
+                      <h3 className="font-bold text-slate-900 text-lg">Recent Projects</h3>
                       <button
                         onClick={() => setActiveTab('projects')}
-                        className="text-xs font-bold text-indigo-600 hover:underline"
+                        className="text-sm font-bold text-indigo-600 hover:underline"
                       >
                         View All &rarr;
                       </button>
@@ -480,17 +519,19 @@ export const AdminDashboard: React.FC = () => {
                       {projects.slice(0, 4).map((p) => (
                         <div
                           key={p._id}
-                          className="flex items-center justify-between p-3 rounded-xl bg-white border border-slate-200 text-xs shadow-sm"
+                          onClick={() => openEditProjectModal(p)}
+                          className="flex items-center justify-between p-3.5 rounded-xl bg-white border border-slate-200 text-sm shadow-sm hover:border-indigo-300 cursor-pointer transition-colors"
                         >
                           <div>
-                            <div className="font-bold text-slate-900">{p.title}</div>
-                            <div className="text-slate-500 font-mono text-[11px]">/{p.slug}</div>
+                            <div className="text-lg font-semibold text-slate-900">{p.title}</div>
+                            <div className="text-sm text-slate-500 font-mono">/{p.slug}</div>
                           </div>
                           <span
-                            className={`px-2 py-0.5 rounded-full font-bold ${p.status === 'published'
-                              ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
-                              : 'bg-amber-100 text-amber-800 border border-amber-200'
-                              }`}
+                            className={`text-xs px-3 py-1 rounded-full font-semibold ${
+                              p.status === 'published'
+                                ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                                : 'bg-amber-100 text-amber-800 border border-amber-200'
+                            }`}
                           >
                             {p.status}
                           </span>
@@ -502,10 +543,10 @@ export const AdminDashboard: React.FC = () => {
                   {/* Recent Blog Posts */}
                   <div className="glass-panel p-6 rounded-2xl space-y-4">
                     <div className="flex items-center justify-between">
-                      <h3 className="font-bold text-slate-900 text-base">Recent Articles</h3>
+                      <h3 className="font-bold text-slate-900 text-lg">Recent Articles</h3>
                       <button
                         onClick={() => setActiveTab('blogs')}
-                        className="text-xs font-bold text-indigo-600 hover:underline"
+                        className="text-sm font-bold text-indigo-600 hover:underline"
                       >
                         View All &rarr;
                       </button>
@@ -514,23 +555,25 @@ export const AdminDashboard: React.FC = () => {
                       {blogs.slice(0, 4).map((b) => (
                         <div
                           key={b._id}
-                          className="flex items-center justify-between p-3 rounded-xl bg-white border border-slate-200 text-xs shadow-sm"
+                          onClick={() => openEditBlogModal(b)}
+                          className="flex items-center justify-between p-3.5 rounded-xl bg-white border border-slate-200 text-sm shadow-sm hover:border-indigo-300 cursor-pointer transition-colors"
                         >
                           <div>
-                            <div className="font-bold text-slate-900">{b.title}</div>
-                            <div className="text-slate-500 font-mono text-[11px]">/{b.slug}</div>
+                            <div className="text-lg font-semibold text-slate-900">{b.title}</div>
+                            <div className="text-sm text-slate-500 font-mono">/{b.slug}</div>
                           </div>
                           <div className="flex items-center gap-2">
                             {b.featured && (
-                              <span className="px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 text-[10px] font-bold">
+                              <span className="px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-700 text-xs font-bold">
                                 Featured
                               </span>
                             )}
                             <span
-                              className={`px-2 py-0.5 rounded-full font-bold ${b.status === 'published'
-                                ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
-                                : 'bg-amber-100 text-amber-800 border border-amber-200'
-                                }`}
+                              className={`text-xs px-3 py-1 rounded-full font-semibold ${
+                                b.status === 'published'
+                                  ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                                  : 'bg-amber-100 text-amber-800 border border-amber-200'
+                              }`}
                             >
                               {b.status}
                             </span>
@@ -548,21 +591,21 @@ export const AdminDashboard: React.FC = () => {
               <div className="space-y-6">
                 {/* Search Bar */}
                 <div className="relative max-w-md">
-                  <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
+                  <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-slate-400" />
                   <input
                     type="text"
                     placeholder="Search projects by title or slug..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-600 shadow-sm"
+                    className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-300 rounded-xl text-base text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-600 shadow-sm"
                   />
                 </div>
 
                 {/* Table */}
                 <div className="glass-panel rounded-2xl overflow-hidden border border-slate-200 shadow-sm">
                   <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs text-slate-700">
-                      <thead className="bg-slate-100 text-slate-700 uppercase font-bold text-[11px] border-b border-slate-200">
+                    <table className="w-full text-left text-sm text-slate-700">
+                      <thead className="bg-slate-100 text-slate-700 uppercase font-bold text-xs border-b border-slate-200">
                         <tr>
                           <th className="px-6 py-4">Title</th>
                           <th className="px-6 py-4">Slug</th>
@@ -581,44 +624,45 @@ export const AdminDashboard: React.FC = () => {
                         ) : (
                           filteredProjects.map((p) => (
                             <tr key={p._id} className="hover:bg-slate-50 transition-colors">
-                              <td className="px-6 py-4 font-bold text-slate-900">
+                              <td className="px-6 py-4 text-lg font-semibold text-slate-900">
                                 <div className="flex items-center gap-3">
                                   <img
                                     src={p.thumbnail}
                                     alt=""
-                                    className="w-9 h-9 rounded-lg object-cover bg-slate-100 shrink-0"
+                                    className="w-10 h-10 rounded-lg object-cover bg-slate-100 shrink-0"
                                   />
                                   <span className="line-clamp-1">{p.title}</span>
                                 </div>
                               </td>
-                              <td className="px-6 py-4 font-mono text-slate-500">/{p.slug}</td>
+                              <td className="px-6 py-4 font-mono text-slate-500 text-sm">/{p.slug}</td>
                               <td className="px-6 py-4">
                                 <span
-                                  className={`px-2.5 py-1 rounded-full font-bold text-[10px] ${p.status === 'published'
-                                    ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
-                                    : 'bg-amber-100 text-amber-800 border border-amber-200'
-                                    }`}
+                                  className={`text-xs px-3 py-1 rounded-full font-semibold ${
+                                    p.status === 'published'
+                                      ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                                      : 'bg-amber-100 text-amber-800 border border-amber-200'
+                                  }`}
                                 >
                                   {p.status}
                                 </span>
                               </td>
-                              <td className="px-6 py-4 text-slate-500">
+                              <td className="px-6 py-4 text-slate-500 text-sm">
                                 {new Date(p.createdAt).toLocaleDateString()}
                               </td>
                               <td className="px-6 py-4 text-right space-x-2">
                                 <button
                                   onClick={() => openEditProjectModal(p)}
-                                  className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-900 text-slate-700 hover:text-white transition-colors border border-slate-200"
+                                  className="p-2 rounded-lg bg-slate-100 hover:bg-slate-900 text-slate-700 hover:text-white transition-colors border border-slate-200"
                                   title="Edit Project"
                                 >
-                                  <Edit2 className="w-3.5 h-3.5" />
+                                  <Edit2 className="w-4 h-4" />
                                 </button>
                                 <button
                                   onClick={() => handleDeleteProject(p._id, p.title)}
-                                  className="p-1.5 rounded-lg bg-slate-100 hover:bg-red-600 text-slate-700 hover:text-white transition-colors border border-slate-200"
+                                  className="p-2 rounded-lg bg-slate-100 hover:bg-red-600 text-slate-700 hover:text-white transition-colors border border-slate-200"
                                   title="Delete Project"
                                 >
-                                  <Trash2 className="w-3.5 h-3.5" />
+                                  <Trash2 className="w-4 h-4" />
                                 </button>
                               </td>
                             </tr>
@@ -636,21 +680,21 @@ export const AdminDashboard: React.FC = () => {
               <div className="space-y-6">
                 {/* Search Bar */}
                 <div className="relative max-w-md">
-                  <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
+                  <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-slate-400" />
                   <input
                     type="text"
                     placeholder="Search articles by title or slug..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-600 shadow-sm"
+                    className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-300 rounded-xl text-base text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-600 shadow-sm"
                   />
                 </div>
 
                 {/* Table */}
                 <div className="glass-panel rounded-2xl overflow-hidden border border-slate-200 shadow-sm">
                   <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs text-slate-700">
-                      <thead className="bg-slate-100 text-slate-700 uppercase font-bold text-[11px] border-b border-slate-200">
+                    <table className="w-full text-left text-sm text-slate-700">
+                      <thead className="bg-slate-100 text-slate-700 uppercase font-bold text-xs border-b border-slate-200">
                         <tr>
                           <th className="px-6 py-4">Title</th>
                           <th className="px-6 py-4">Featured</th>
@@ -669,55 +713,141 @@ export const AdminDashboard: React.FC = () => {
                         ) : (
                           filteredBlogs.map((b) => (
                             <tr key={b._id} className="hover:bg-slate-50 transition-colors">
-                              <td className="px-6 py-4 font-bold text-slate-900">
+                              <td className="px-6 py-4">
                                 <div className="flex items-center gap-3">
                                   <img
                                     src={b.coverImage}
                                     alt=""
-                                    className="w-9 h-9 rounded-lg object-cover bg-slate-100 shrink-0"
+                                    className="w-10 h-10 rounded-lg object-cover bg-slate-100 shrink-0"
                                   />
                                   <div>
-                                    <div className="line-clamp-1">{b.title}</div>
-                                    <div className="text-[11px] font-mono text-slate-500">/{b.slug}</div>
+                                    <div className="line-clamp-1 text-lg font-semibold text-slate-900">{b.title}</div>
+                                    <div className="text-sm font-mono text-slate-500">/{b.slug}</div>
                                   </div>
                                 </div>
                               </td>
                               <td className="px-6 py-4">
                                 {b.featured ? (
-                                  <span className="px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-700 border border-indigo-200 text-[10px] font-bold">
+                                  <span className="px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-bold">
                                     ★ Featured
                                   </span>
                                 ) : (
-                                  <span className="text-slate-400 text-[11px]">Standard</span>
+                                  <span className="text-slate-400 text-xs">Standard</span>
                                 )}
                               </td>
                               <td className="px-6 py-4">
                                 <span
-                                  className={`px-2.5 py-1 rounded-full font-bold text-[10px] ${b.status === 'published'
-                                    ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
-                                    : 'bg-amber-100 text-amber-800 border border-amber-200'
-                                    }`}
+                                  className={`text-xs px-3 py-1 rounded-full font-semibold ${
+                                    b.status === 'published'
+                                      ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                                      : 'bg-amber-100 text-amber-800 border border-amber-200'
+                                  }`}
                                 >
                                   {b.status}
                                 </span>
                               </td>
-                              <td className="px-6 py-4 text-slate-500">
+                              <td className="px-6 py-4 text-slate-500 text-sm">
                                 {new Date(b.createdAt).toLocaleDateString()}
                               </td>
                               <td className="px-6 py-4 text-right space-x-2">
                                 <button
                                   onClick={() => openEditBlogModal(b)}
-                                  className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-900 text-slate-700 hover:text-white transition-colors border border-slate-200"
+                                  className="p-2 rounded-lg bg-slate-100 hover:bg-slate-900 text-slate-700 hover:text-white transition-colors border border-slate-200"
                                   title="Edit Blog"
                                 >
-                                  <Edit2 className="w-3.5 h-3.5" />
+                                  <Edit2 className="w-4 h-4" />
                                 </button>
                                 <button
                                   onClick={() => handleDeleteBlog(b._id, b.title)}
-                                  className="p-1.5 rounded-lg bg-slate-100 hover:bg-red-600 text-slate-700 hover:text-white transition-colors border border-slate-200"
+                                  className="p-2 rounded-lg bg-slate-100 hover:bg-red-600 text-slate-700 hover:text-white transition-colors border border-slate-200"
                                   title="Delete Blog"
                                 >
-                                  <Trash2 className="w-3.5 h-3.5" />
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* INQUIRIES TAB */}
+            {activeTab === 'inquiries' && (
+              <div className="space-y-6">
+                {/* Search Bar */}
+                <div className="relative max-w-md">
+                  <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Search inquiries by client name or email..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-300 rounded-xl text-base text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-600 shadow-sm"
+                  />
+                </div>
+
+                {/* Table */}
+                <div className="glass-panel rounded-2xl overflow-hidden border border-slate-200 shadow-sm">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-sm text-slate-700">
+                      <thead className="bg-slate-100 text-slate-700 uppercase font-bold text-xs border-b border-slate-200">
+                        <tr>
+                          <th className="px-6 py-4">Client Name</th>
+                          <th className="px-6 py-4">Email</th>
+                          <th className="px-6 py-4">Service</th>
+                          <th className="px-6 py-4">Budget</th>
+                          <th className="px-6 py-4">Project Details</th>
+                          <th className="px-6 py-4">Date</th>
+                          <th className="px-6 py-4 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-200">
+                        {filteredInquiries.length === 0 ? (
+                          <tr>
+                            <td colSpan={7} className="px-6 py-8 text-center text-slate-500">
+                              No client inquiries found.
+                            </td>
+                          </tr>
+                        ) : (
+                          filteredInquiries.map((inq) => (
+                            <tr key={inq._id} className="hover:bg-slate-50 transition-colors">
+                              <td className="px-6 py-4 text-lg font-semibold text-slate-900">
+                                {inq.name}
+                              </td>
+                              <td className="px-6 py-4 text-slate-600 text-sm font-medium">
+                                <a href={`mailto:${inq.email}`} className="text-indigo-600 hover:underline">
+                                  {inq.email}
+                                </a>
+                              </td>
+                              <td className="px-6 py-4">
+                                <span className="px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 text-xs font-semibold">
+                                  {inq.service}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 text-slate-700 font-semibold text-sm">
+                                {inq.budget}
+                              </td>
+                              <td className="px-6 py-4 text-slate-600 text-sm max-w-xs">
+                                <p className="line-clamp-2 leading-relaxed">{inq.details}</p>
+                              </td>
+                              <td className="px-6 py-4 text-slate-500 text-sm whitespace-nowrap">
+                                {new Date(inq.createdAt).toLocaleDateString('en-US', {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  year: 'numeric',
+                                })}
+                              </td>
+                              <td className="px-6 py-4 text-right">
+                                <button
+                                  onClick={() => handleDeleteInquiry(inq._id, inq.name)}
+                                  className="p-2 rounded-lg bg-slate-100 hover:bg-red-600 text-slate-700 hover:text-white transition-colors border border-slate-200"
+                                  title="Delete Inquiry"
+                                >
+                                  <Trash2 className="w-4 h-4" />
                                 </button>
                               </td>
                             </tr>
@@ -750,12 +880,12 @@ export const AdminDashboard: React.FC = () => {
             </div>
 
             {formError && (
-              <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-xs font-bold">
+              <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm font-bold">
                 {formError}
               </div>
             )}
 
-            <form onSubmit={handleProjectSubmit} className="space-y-4 text-xs">
+            <form onSubmit={handleProjectSubmit} className="space-y-4 text-sm">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-slate-700 font-bold mb-1">Project Title</label>
@@ -876,16 +1006,16 @@ export const AdminDashboard: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setProjectModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 hover:text-slate-900 font-bold text-xs border border-slate-200"
+                  className="px-4 py-2.5 rounded-xl bg-slate-100 text-slate-700 hover:text-slate-900 font-bold text-sm border border-slate-200"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
-                  className="px-5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition-all shadow-md flex items-center gap-2"
+                  className="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm transition-all shadow-md flex items-center gap-2"
                 >
-                  {saving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                  {saving && <Loader2 className="w-4 h-4 animate-spin" />}
                   <span>{editingProject ? 'Update Project' : 'Create Project'}</span>
                 </button>
               </div>
@@ -911,12 +1041,12 @@ export const AdminDashboard: React.FC = () => {
             </div>
 
             {formError && (
-              <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-xs font-bold">
+              <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm font-bold">
                 {formError}
               </div>
             )}
 
-            <form onSubmit={handleBlogSubmit} className="space-y-4 text-xs">
+            <form onSubmit={handleBlogSubmit} className="space-y-4 text-sm">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-slate-700 font-bold mb-1">Article Title</label>
@@ -1018,16 +1148,16 @@ export const AdminDashboard: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setBlogModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 hover:text-slate-900 font-bold text-xs border border-slate-200"
+                  className="px-4 py-2.5 rounded-xl bg-slate-100 text-slate-700 hover:text-slate-900 font-bold text-sm border border-slate-200"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
-                  className="px-5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition-all shadow-md flex items-center gap-2"
+                  className="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm transition-all shadow-md flex items-center gap-2"
                 >
-                  {saving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                  {saving && <Loader2 className="w-4 h-4 animate-spin" />}
                   <span>{editingBlog ? 'Update Article' : 'Create Article'}</span>
                 </button>
               </div>
