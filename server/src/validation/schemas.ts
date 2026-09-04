@@ -30,3 +30,11 @@ export const blogSchema = z.object({
 });
 
 export const blogUpdateSchema = blogSchema.partial();
+
+export const inquirySchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  email: z.string().email('Invalid email address'),
+  service: z.string().default('UI/UX Design'),
+  budget: z.string().default('$15k - $30k'),
+  details: z.string().min(1, 'Project details are required'),
+});
